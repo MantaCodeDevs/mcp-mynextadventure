@@ -1,0 +1,5377 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1/trips": {
+      "get": {
+        "operationId": "TripsV1Controller_findAll",
+        "summary": "List the current user's trips.",
+        "parameters": [
+          {
+            "name": "includeExample",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripListV1Dto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "TripWritesV1Controller_create",
+        "summary": "Create a new trip.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTripV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Trip created. Body contains the created Trip document."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}": {
+      "get": {
+        "operationId": "TripsV1Controller_findOne",
+        "summary": "Get full trip details by ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeAllOptions",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripDetailsV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip not found or no access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "TripWritesV1Controller_update",
+        "summary": "Update top-level trip fields.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTripV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Trip updated."
+          },
+          "404": {
+            "description": "Trip not found or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "TripWritesV1Controller_delete",
+        "summary": "Delete a trip permanently.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteTripResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip not found or no owner access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/destinations/{destinationKey}/options/accommodation": {
+      "post": {
+        "operationId": "TripsV1Controller_addAccommodationOption",
+        "summary": "Add an accommodation option to a destination.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destinationKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAccommodationOptionV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Option created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateOptionResultV1Dto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/destinations/{destinationKey}/options/transport": {
+      "post": {
+        "operationId": "TripsV1Controller_addTransportOption",
+        "summary": "Add a transport option to a destination.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destinationKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransportOptionV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Option created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateOptionResultV1Dto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/destinations/{destinationKey}/options/getting-around": {
+      "post": {
+        "operationId": "TripsV1Controller_addGettingAroundOption",
+        "summary": "Add a getting-around option to a destination.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destinationKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGettingAroundOptionV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Option created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateOptionResultV1Dto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/options/event": {
+      "post": {
+        "operationId": "TripsV1Controller_addEventOption",
+        "summary": "Add an event option to a variant.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Option created."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/select": {
+      "put": {
+        "operationId": "TripsV1Controller_selectVariant",
+        "summary": "Select a trip variant.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/destinations/{destinationKey}/options/{optionId}/select": {
+      "put": {
+        "operationId": "TripsV1Controller_selectOption",
+        "summary": "Select a destination option.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destinationKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "optionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/share-link": {
+      "post": {
+        "operationId": "TripWritesV1Controller_createShareLink",
+        "summary": "Generate or refresh a shareable link for the trip.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareLinkV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip not found, no access, or trip has no variant to share."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "TripWritesV1Controller_deleteShareLinks",
+        "summary": "Revoke all share tokens for the trip.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnshareResultV1Dto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants": {
+      "post": {
+        "operationId": "VariantsV1Controller_create",
+        "summary": "Create a new variant on a trip.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVariantV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuplicateVariantResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip not found or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/duplicate": {
+      "post": {
+        "operationId": "VariantsV1Controller_duplicate",
+        "summary": "Duplicate a variant on a trip.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuplicateVariantResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip or variant not found, or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}": {
+      "patch": {
+        "operationId": "VariantsV1Controller_update",
+        "summary": "Update fields on an existing variant.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVariantV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Variant updated."
+          },
+          "404": {
+            "description": "Trip or variant not found, or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "VariantsV1Controller_delete",
+        "summary": "Delete a variant from a trip.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteVariantResultV1Dto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot delete the only variant of a trip."
+          },
+          "404": {
+            "description": "Trip or variant not found, or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/destinations": {
+      "post": {
+        "operationId": "DestinationsV1Controller_create",
+        "summary": "Add a new destination to a variant.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDestinationV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateDestinationResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip or variant not found, or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/destinations/{destinationKey}": {
+      "patch": {
+        "operationId": "DestinationsV1Controller_update",
+        "summary": "Update fields on a destination.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destinationKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDestinationV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Destination updated."
+          },
+          "404": {
+            "description": "Trip, variant, or destination not found, or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "DestinationsV1Controller_delete",
+        "summary": "Delete a destination from a variant.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destinationKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteDestinationResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip, variant, or destination not found, or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/destinations/reorder": {
+      "post": {
+        "operationId": "DestinationsV1Controller_reorder",
+        "summary": "Reorder destinations within a variant.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderDestinationsV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Destinations reordered."
+          },
+          "404": {
+            "description": "Trip or variant not found, or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/destinations/{destinationKey}/options/{kind}/{optionKey}": {
+      "patch": {
+        "operationId": "OptionsWritesV1Controller_update",
+        "summary": "Update fields on a destination option (accommodation | transport | getting-around).",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destinationKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "optionKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Fields to update. The shape depends on the :kind path segment.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateAccommodationOptionV1Dto"
+                  },
+                  {
+                    "$ref": "#/components/schemas/UpdateTransportOptionV1Dto"
+                  },
+                  {
+                    "$ref": "#/components/schemas/UpdateGettingAroundOptionV1Dto"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Option updated."
+          },
+          "400": {
+            "description": "Unknown option kind."
+          },
+          "404": {
+            "description": "Trip, variant, destination, or option not found, or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "OptionsWritesV1Controller_delete",
+        "summary": "Delete a destination option (accommodation | transport | getting-around).",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destinationKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "optionKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteOptionResultV1Dto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown option kind."
+          },
+          "404": {
+            "description": "Trip, variant, destination, or option not found, or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/destinations/{destinationKey}/options/{kind}/deselect": {
+      "put": {
+        "operationId": "OptionsWritesV1Controller_deselect",
+        "summary": "Clear the selected option of the given kind on a destination.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destinationKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeselectOptionResultV1Dto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown option kind."
+          },
+          "404": {
+            "description": "Trip, variant, or destination not found, or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/events/{eventKey}": {
+      "patch": {
+        "operationId": "EventsWritesV1Controller_update",
+        "summary": "Update fields on an event.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "eventKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEventV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Event updated."
+          },
+          "404": {
+            "description": "Trip, variant, or event not found, or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "EventsWritesV1Controller_delete",
+        "summary": "Delete an event from a variant.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "eventKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteEventResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip, variant, or event not found, or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/events/{eventKey}/toggle": {
+      "post": {
+        "operationId": "EventsWritesV1Controller_toggle",
+        "summary": "Toggle an event's selected state on the variant.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "eventKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToggleEventResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip, variant, or event not found, or no edit access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/access": {
+      "get": {
+        "operationId": "AccessV1Controller_list",
+        "summary": "List users with access to a trip (includes the owner).",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripAccessListV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip not found or no access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/access/invite": {
+      "post": {
+        "operationId": "AccessV1Controller_invite",
+        "summary": "Invite a user to a trip by email and send the invite email.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteUserV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteUserResultV1Dto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "User already invited."
+          },
+          "404": {
+            "description": "Trip not found or no owner access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/access/{userId}": {
+      "patch": {
+        "operationId": "AccessV1Controller_updateLevel",
+        "summary": "Change a user's access level on a trip.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAccessLevelV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateAccessLevelResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip not found or no owner access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "AccessV1Controller_removeAccess",
+        "summary": "Remove a user's access from a trip.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemoveAccessResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip not found or no owner access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/access/invite-tokens": {
+      "post": {
+        "operationId": "AccessV1Controller_createInviteToken",
+        "summary": "Generate a new shareable invite-link token.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInviteTokenV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteTokenV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip not found or no owner access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "AccessV1Controller_listInviteTokens",
+        "summary": "List unexpired invite-link tokens for a trip.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteTokenListV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip not found or no owner access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/access/invite-tokens/{tokenId}": {
+      "delete": {
+        "operationId": "AccessV1Controller_revokeInviteToken",
+        "summary": "Revoke an invite-link token.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tokenId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokeInviteTokenResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip not found or no owner access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/votes/options": {
+      "post": {
+        "operationId": "VotesV1Controller_voteOption",
+        "summary": "Cast / update / clear a vote on a destination option.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoteOptionV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CastVoteResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip or variant not found, or no voter access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/votes/events": {
+      "post": {
+        "operationId": "VotesV1Controller_voteEvent",
+        "summary": "Cast / update / clear a vote on an event.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoteEventV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CastVoteResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip or variant not found, or no voter access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/variants/{variantId}/votes": {
+      "get": {
+        "operationId": "VotesV1Controller_listVotes",
+        "summary": "List all votes cast on a variant (options + events).",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoteListV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trip or variant not found, or no access."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/goals": {
+      "get": {
+        "operationId": "GoalsV1Controller_list",
+        "summary": "List the caller's travel goals, optionally filtered by status, collection or trip.",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "dreaming",
+                "planning",
+                "visited"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "collection",
+            "required": false,
+            "in": "query",
+            "description": "Collection id to filter by.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tripId",
+            "required": false,
+            "in": "query",
+            "description": "Trip id to filter by linked trip.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalListV1Dto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "GoalsV1Controller_create",
+        "summary": "Create a new travel goal.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGoalV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TravelGoalV1Dto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/goals/{goalId}": {
+      "get": {
+        "operationId": "GoalsV1Controller_findOne",
+        "summary": "Fetch a single goal by id.",
+        "parameters": [
+          {
+            "name": "goalId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TravelGoalV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Goal not found or not owned by caller."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "GoalsV1Controller_update",
+        "summary": "Update an existing goal.",
+        "parameters": [
+          {
+            "name": "goalId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGoalV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TravelGoalV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Goal not found or not owned by caller."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "GoalsV1Controller_delete",
+        "summary": "Delete a goal.",
+        "parameters": [
+          {
+            "name": "goalId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteGoalResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Goal not found or not owned by caller."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/goals/quick-add": {
+      "post": {
+        "operationId": "GoalsV1Controller_quickAdd",
+        "summary": "Quick-add a goal by name or URL — server detects which.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuickAddGoalV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TravelGoalV1Dto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/goals/{goalId}/link-trip": {
+      "post": {
+        "operationId": "GoalsV1Controller_linkTrip",
+        "summary": "Link a goal to a trip (sets status to \"planning\").",
+        "parameters": [
+          {
+            "name": "goalId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkGoalToTripV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TravelGoalV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Goal not found or not owned by caller."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/goals/{goalId}/unlink-trip": {
+      "post": {
+        "operationId": "GoalsV1Controller_unlinkTrip",
+        "summary": "Unlink a goal from a trip (reverts status to \"dreaming\").",
+        "parameters": [
+          {
+            "name": "goalId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TravelGoalV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Goal not found or not owned by caller."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/goals/{goalId}/mark-visited": {
+      "post": {
+        "operationId": "GoalsV1Controller_markVisited",
+        "summary": "Mark a goal as visited (sets status to \"visited\" and stamps the date).",
+        "parameters": [
+          {
+            "name": "goalId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkGoalVisitedV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TravelGoalV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Goal not found or not owned by caller."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/goals/{goalId}/mark-dreaming": {
+      "post": {
+        "operationId": "GoalsV1Controller_markDreaming",
+        "summary": "Reset a goal back to \"dreaming\" — clears visited date and trip link.",
+        "parameters": [
+          {
+            "name": "goalId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TravelGoalV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Goal not found or not owned by caller."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/collections": {
+      "get": {
+        "operationId": "CollectionsV1Controller_list",
+        "summary": "List the caller's collections (headers only — no nested goals).",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionListV1Dto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "CollectionsV1Controller_create",
+        "summary": "Create a new collection.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCollectionV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalCollectionV1Dto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/collections/{collectionId}": {
+      "get": {
+        "operationId": "CollectionsV1Controller_findOne",
+        "summary": "Fetch a collection with its nested goals populated.",
+        "parameters": [
+          {
+            "name": "collectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalCollectionV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Collection not found or not owned by caller."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "CollectionsV1Controller_update",
+        "summary": "Update a collection. Setting visibility to non-private auto-generates a share token.",
+        "parameters": [
+          {
+            "name": "collectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCollectionV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalCollectionV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Collection not found or not owned by caller."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "CollectionsV1Controller_delete",
+        "summary": "Delete a collection (removes the reference from every goal that referenced it).",
+        "parameters": [
+          {
+            "name": "collectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteCollectionResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Collection not found or not owned by caller."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/collections/{collectionId}/goals": {
+      "post": {
+        "operationId": "CollectionsV1Controller_modifyGoals",
+        "summary": "Add and/or remove goals from a collection. Provide {add: [], remove: []} ids.",
+        "parameters": [
+          {
+            "name": "collectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModifyCollectionGoalsV1Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalCollectionV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Collection not found or not owned by caller."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/collections/{collectionId}/share": {
+      "post": {
+        "operationId": "CollectionsV1Controller_share",
+        "summary": "Generate (or return) a share token for the collection. Idempotent.",
+        "parameters": [
+          {
+            "name": "collectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionShareTokenV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Collection not found or not owned by caller."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/collections/shared/{token}": {
+      "get": {
+        "operationId": "SharedCollectionsV1Controller_findByToken",
+        "summary": "Anonymous read of a collection by share token. No API key required.",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalCollectionV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token not found, expired, or collection is private."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ]
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "operationId": "MeV1Controller_getMe",
+        "summary": "Return identity info for the API key holder.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeV1Dto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/api-keys": {
+      "get": {
+        "operationId": "ApiKeysV1Controller_list",
+        "summary": "List the current user's active API keys.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyListV1Dto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/api-keys/me": {
+      "delete": {
+        "operationId": "ApiKeysV1Controller_revokeCurrent",
+        "summary": "Revoke the API key authenticating this request.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokeApiKeyResultV1Dto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    },
+    "/v1/api-keys/{name}": {
+      "delete": {
+        "operationId": "ApiKeysV1Controller_revokeByName",
+        "summary": "Revoke an API key by name.",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokeApiKeyResultV1Dto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No active key with that name."
+          }
+        },
+        "tags": [
+          "Public API v1"
+        ],
+        "security": [
+          {
+            "X-API-Key": []
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "MyNextAdventure Public API",
+    "description": "MyNextAdventure.cloud Public API Documentation (v1)",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "X-API-Key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Enter your API key here to authenticate requests"
+      }
+    },
+    "schemas": {
+      "ExactDatesV1Dto": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "startDate",
+          "endDate"
+        ]
+      },
+      "FlexiDatesV1Dto": {
+        "type": "object",
+        "properties": {
+          "departLeavingNotBeforeDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "departArrivingNotAfterDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "returnLeavingNotBeforeDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "returnArrivingNotAfterDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "minNights": {
+            "type": "number"
+          },
+          "maxNights": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "departLeavingNotBeforeDate",
+          "departArrivingNotAfterDate",
+          "returnLeavingNotBeforeDate",
+          "returnArrivingNotAfterDate",
+          "minNights",
+          "maxNights"
+        ]
+      },
+      "UserInfoV1Dto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "avatar": {
+            "type": "string"
+          },
+          "isCurrentUser": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "email",
+          "userId",
+          "name"
+        ]
+      },
+      "TripListItemV1Dto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planning",
+              "ready",
+              "finished",
+              "cancelled"
+            ]
+          },
+          "isExample": {
+            "type": "boolean"
+          },
+          "coverPhoto": {
+            "type": "string"
+          },
+          "numberOfVariants": {
+            "type": "number"
+          },
+          "dates": {
+            "description": "Either an exact-dates or flexi-dates structure for the trip.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ExactDatesV1Dto"
+              },
+              {
+                "$ref": "#/components/schemas/FlexiDatesV1Dto"
+              }
+            ]
+          },
+          "isGroupTrip": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/UserInfoV1Dto"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "isExample",
+          "numberOfVariants"
+        ]
+      },
+      "TripListV1Dto": {
+        "type": "object",
+        "properties": {
+          "trips": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TripListItemV1Dto"
+            }
+          }
+        },
+        "required": [
+          "trips"
+        ]
+      },
+      "TripVariantChildV1Dto": {
+        "type": "object",
+        "properties": {
+          "age": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "age"
+        ]
+      },
+      "TripVariantParticipantsV1Dto": {
+        "type": "object",
+        "properties": {
+          "adults": {
+            "type": "number"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TripVariantChildV1Dto"
+            }
+          },
+          "numberOfRooms": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "adults",
+          "children"
+        ]
+      },
+      "OptionPlaceCoordinatesV1Dto": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ]
+      },
+      "OptionLocationOutV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "formattedAddress": {
+            "type": "string"
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/OptionPlaceCoordinatesV1Dto"
+          },
+          "googlePlaceId": {
+            "type": "string"
+          }
+        }
+      },
+      "AccommodationOptionV1Dto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "totalCost": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/OptionLocationOutV1Dto"
+          },
+          "checkIn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "checkOut": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "freeCancellationUntil": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "checkInTime": {
+            "type": "string"
+          },
+          "checkOutTime": {
+            "type": "string"
+          },
+          "sourceUrl": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/UserInfoV1Dto"
+          }
+        },
+        "required": [
+          "key",
+          "totalCost",
+          "currency",
+          "location"
+        ]
+      },
+      "TransportOptionV1Dto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "transportType": {
+            "type": "string",
+            "enum": [
+              "car",
+              "plane",
+              "train",
+              "bus",
+              "ship",
+              "motorbike",
+              "bike",
+              "other"
+            ]
+          },
+          "from": {
+            "$ref": "#/components/schemas/OptionLocationOutV1Dto"
+          },
+          "to": {
+            "$ref": "#/components/schemas/OptionLocationOutV1Dto"
+          },
+          "departAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "arriveAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "durationHours": {
+            "type": "number"
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "roundTrip": {
+            "type": "boolean"
+          },
+          "roundTripReturn": {
+            "type": "boolean"
+          },
+          "outboundIncludesReturnCost": {
+            "type": "boolean"
+          },
+          "returnTransportOptionKey": {
+            "type": "string"
+          },
+          "totalCost": {
+            "type": "number"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/UserInfoV1Dto"
+          }
+        },
+        "required": [
+          "key",
+          "roundTrip"
+        ]
+      },
+      "GettingAroundOptionV1Dto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "walk",
+              "publicTransport",
+              "rideShare",
+              "ownCar",
+              "rentalCar",
+              "ownMotor",
+              "rentalMotor",
+              "bike",
+              "rentalBike",
+              "other"
+            ]
+          },
+          "totalCost": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/UserInfoV1Dto"
+          }
+        },
+        "required": [
+          "key"
+        ]
+      },
+      "TripDestinationV1Dto": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string"
+          },
+          "destinationKey": {
+            "type": "string"
+          },
+          "isReturnToHome": {
+            "type": "boolean"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Arrival date at this destination."
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Departure date from this destination."
+          },
+          "accommodationOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccommodationOptionV1Dto"
+            }
+          },
+          "selectedAccommodation": {
+            "type": "string"
+          },
+          "transportOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransportOptionV1Dto"
+            }
+          },
+          "selectedTransportOption": {
+            "type": "string"
+          },
+          "gettingAroundOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GettingAroundOptionV1Dto"
+            }
+          },
+          "selectedGettingAroundOption": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "destination",
+          "destinationKey",
+          "accommodationOptions",
+          "transportOptions",
+          "gettingAroundOptions"
+        ]
+      },
+      "EventLocationCoordinatesV1Dto": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ]
+      },
+      "EventLocationV1Dto": {
+        "type": "object",
+        "properties": {
+          "googlePlaceId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "formattedAddress": {
+            "type": "string"
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/EventLocationCoordinatesV1Dto"
+          }
+        }
+      },
+      "EventToAttendV1Dto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "$ref": "#/components/schemas/EventLocationV1Dto"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "totalCost": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "selected": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "selected"
+        ]
+      },
+      "TripVariantV1Dto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "dates": {
+            "description": "Either an exact-dates or flexi-dates structure for this variant.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ExactDatesV1Dto"
+              },
+              {
+                "$ref": "#/components/schemas/FlexiDatesV1Dto"
+              }
+            ]
+          },
+          "minNights": {
+            "type": "number"
+          },
+          "maxNights": {
+            "type": "number"
+          },
+          "participants": {
+            "$ref": "#/components/schemas/TripVariantParticipantsV1Dto"
+          },
+          "destinations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TripDestinationV1Dto"
+            }
+          },
+          "eventsToAttend": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventToAttendV1Dto"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "participants",
+          "destinations",
+          "eventsToAttend",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TripDetailsV1Dto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planning",
+              "ready",
+              "finished",
+              "cancelled"
+            ]
+          },
+          "isExample": {
+            "type": "boolean"
+          },
+          "coverPhoto": {
+            "type": "string"
+          },
+          "selectedVariant": {
+            "type": "string"
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TripVariantV1Dto"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isGroupTrip": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/UserInfoV1Dto"
+          },
+          "accessLevel": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "edit",
+              "voter",
+              "view"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "isExample",
+          "variants",
+          "createdAt",
+          "updatedAt",
+          "accessLevel"
+        ]
+      },
+      "CreateOptionLocationV1Dto": {
+        "type": "object",
+        "properties": {
+          "googlePlaceId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          }
+        }
+      },
+      "RoomDetailsV1Dto": {
+        "type": "object",
+        "properties": {
+          "numberOfRooms": {
+            "type": "number"
+          },
+          "sizeInM2": {
+            "type": "number"
+          }
+        }
+      },
+      "CreateAccommodationOptionV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the accommodation (e.g. \"Hilton Times Square\")."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "hotel",
+              "hostel",
+              "apartment",
+              "house",
+              "camping",
+              "other"
+            ],
+            "description": "Type of accommodation."
+          },
+          "totalCost": {
+            "type": "number",
+            "description": "Total cost for the stay."
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code (e.g. \"USD\")."
+          },
+          "location": {
+            "$ref": "#/components/schemas/CreateOptionLocationV1Dto"
+          },
+          "checkIn": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Check-in date."
+          },
+          "checkOut": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Check-out date."
+          },
+          "checkInTime": {
+            "type": "string",
+            "description": "Check-in time of day (e.g. \"15:00\")."
+          },
+          "checkOutTime": {
+            "type": "string",
+            "description": "Check-out time of day (e.g. \"11:00\")."
+          },
+          "freeCancellationUntil": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Free cancellation deadline."
+          },
+          "roomDetails": {
+            "$ref": "#/components/schemas/RoomDetailsV1Dto"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "sourceUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "totalCost",
+          "currency",
+          "location",
+          "roomDetails"
+        ]
+      },
+      "CreateOptionResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Server-assigned key for the newly-created option."
+          }
+        },
+        "required": [
+          "key"
+        ]
+      },
+      "CreateTransportOptionV1Dto": {
+        "type": "object",
+        "properties": {
+          "totalCost": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "from": {
+            "$ref": "#/components/schemas/CreateOptionLocationV1Dto"
+          },
+          "to": {
+            "$ref": "#/components/schemas/CreateOptionLocationV1Dto"
+          },
+          "departAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "arriveAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "durationHours": {
+            "type": "number"
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "transportType": {
+            "type": "string",
+            "enum": [
+              "car",
+              "plane",
+              "train",
+              "bus",
+              "ship",
+              "motorbike",
+              "bike",
+              "other"
+            ]
+          },
+          "roundTrip": {
+            "type": "boolean"
+          },
+          "outboundIncludesReturnCost": {
+            "type": "boolean"
+          },
+          "roundTripReturn": {
+            "type": "boolean"
+          },
+          "returnTransportOptionKey": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "totalCost",
+          "currency",
+          "transportType",
+          "roundTrip"
+        ]
+      },
+      "CreateGettingAroundOptionV1Dto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "walk",
+              "publicTransport",
+              "rideShare",
+              "ownCar",
+              "rentalCar",
+              "ownMotor",
+              "rentalMotor",
+              "bike",
+              "rentalBike",
+              "other"
+            ]
+          },
+          "totalCost": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "totalCost",
+          "currency"
+        ]
+      },
+      "CreateEventLocationCoordinatesV1Dto": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "description": "Latitude."
+          },
+          "lng": {
+            "type": "number",
+            "description": "Longitude."
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ]
+      },
+      "CreateEventLocationV1Dto": {
+        "type": "object",
+        "properties": {
+          "googlePlaceId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "formattedAddress": {
+            "type": "string"
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/CreateEventLocationCoordinatesV1Dto"
+          }
+        }
+      },
+      "CreateEventV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Event name (e.g. \"Louvre Museum\")."
+          },
+          "start": {
+            "type": "string",
+            "description": "Start datetime in ISO 8601.",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "description": "End datetime in ISO 8601.",
+            "format": "date-time"
+          },
+          "totalCost": {
+            "type": "number",
+            "description": "Total cost of the event/ticket."
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code (e.g. \"GBP\")."
+          },
+          "link": {
+            "type": "string",
+            "description": "URL for booking or more information."
+          },
+          "location": {
+            "$ref": "#/components/schemas/CreateEventLocationV1Dto"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CreateTripV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Trip name as shown in the UI.",
+            "example": "Japan 2026"
+          },
+          "coverPhoto": {
+            "type": "string",
+            "description": "URL of the cover photo.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateTripV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "New trip name."
+          },
+          "coverPhoto": {
+            "type": "string",
+            "description": "URL of the new cover photo."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planning",
+              "ready",
+              "finished",
+              "cancelled"
+            ],
+            "description": "New trip status."
+          }
+        }
+      },
+      "DeleteTripResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "deleted",
+          "id"
+        ]
+      },
+      "ShareLinkV1Dto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The shareable trip URL."
+          },
+          "token": {
+            "type": "string",
+            "description": "The opaque share token at the end of the URL."
+          }
+        },
+        "required": [
+          "url",
+          "token"
+        ]
+      },
+      "UnshareResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "removedCount": {
+            "type": "number",
+            "description": "Number of share tokens that were active and have now been revoked."
+          }
+        },
+        "required": [
+          "removedCount"
+        ]
+      },
+      "CreateVariantV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Variant name (e.g. \"Beach option\", \"Mountain option\")."
+          },
+          "dates": {
+            "description": "Either an exact-dates or flexi-dates structure for this variant.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ExactDatesV1Dto"
+              },
+              {
+                "$ref": "#/components/schemas/FlexiDatesV1Dto"
+              }
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "description": "Free-form variant notes."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "DuplicateVariantResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the newly-created variant."
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the newly-created variant (typically \"<source> (copy)\")."
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "UpdateVariantV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "New variant name."
+          },
+          "dates": {
+            "description": "Either an exact-dates or flexi-dates structure for this variant.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ExactDatesV1Dto"
+              },
+              {
+                "$ref": "#/components/schemas/FlexiDatesV1Dto"
+              }
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "description": "Free-form variant notes."
+          }
+        }
+      },
+      "DeleteVariantResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "description": "ID of the deleted variant."
+          }
+        },
+        "required": [
+          "deleted",
+          "id"
+        ]
+      },
+      "CreateDestinationV1Dto": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Place name for this destination (e.g. \"Lisbon, Portugal\")."
+          },
+          "isReturnToHome": {
+            "type": "boolean",
+            "description": "Marks this destination as the return-to-home leg. Server keeps it pinned to the end."
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Arrival date at this destination."
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Departure date from this destination."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Free-form destination notes."
+          }
+        },
+        "required": [
+          "destination"
+        ]
+      },
+      "CreateDestinationResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "destinationKey": {
+            "type": "string",
+            "description": "Server-assigned key for the newly-created destination."
+          }
+        },
+        "required": [
+          "destinationKey"
+        ]
+      },
+      "UpdateDestinationV1Dto": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "New place name."
+          },
+          "isReturnToHome": {
+            "type": "boolean",
+            "description": "Toggle return-to-home semantics."
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Arrival date at this destination. Pass null to clear."
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Departure date from this destination. Pass null to clear."
+          },
+          "notes": {
+            "type": "string",
+            "description": "New free-form notes."
+          }
+        }
+      },
+      "ReorderDestinationsV1Dto": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "description": "Destination keys in the desired new order. Keys not present are sorted to the front in their existing relative order.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "order"
+        ]
+      },
+      "DeleteDestinationResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean"
+          },
+          "destinationKey": {
+            "type": "string",
+            "description": "Key of the deleted destination."
+          }
+        },
+        "required": [
+          "deleted",
+          "destinationKey"
+        ]
+      },
+      "UpdateAccommodationOptionV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the accommodation."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "hotel",
+              "hostel",
+              "apartment",
+              "house",
+              "camping",
+              "other"
+            ],
+            "description": "Type of accommodation."
+          },
+          "totalCost": {
+            "type": "number",
+            "description": "Total cost for the stay."
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code (e.g. \"USD\")."
+          },
+          "location": {
+            "$ref": "#/components/schemas/CreateOptionLocationV1Dto"
+          },
+          "checkIn": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Check-in date."
+          },
+          "checkOut": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Check-out date."
+          },
+          "checkInTime": {
+            "type": "string",
+            "description": "Check-in time of day (e.g. \"15:00\")."
+          },
+          "checkOutTime": {
+            "type": "string",
+            "description": "Check-out time of day (e.g. \"11:00\")."
+          },
+          "freeCancellationUntil": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Free cancellation deadline. Pass null to clear."
+          },
+          "roomDetails": {
+            "$ref": "#/components/schemas/RoomDetailsV1Dto"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "sourceUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateTransportOptionV1Dto": {
+        "type": "object",
+        "properties": {
+          "totalCost": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "from": {
+            "$ref": "#/components/schemas/CreateOptionLocationV1Dto"
+          },
+          "to": {
+            "$ref": "#/components/schemas/CreateOptionLocationV1Dto"
+          },
+          "departAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "arriveAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "durationHours": {
+            "type": "number"
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "transportType": {
+            "type": "string",
+            "enum": [
+              "car",
+              "plane",
+              "train",
+              "bus",
+              "ship",
+              "motorbike",
+              "bike",
+              "other"
+            ]
+          },
+          "roundTrip": {
+            "type": "boolean"
+          },
+          "outboundIncludesReturnCost": {
+            "type": "boolean"
+          },
+          "roundTripReturn": {
+            "type": "boolean"
+          },
+          "returnTransportOptionKey": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateGettingAroundOptionV1Dto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "walk",
+              "publicTransport",
+              "rideShare",
+              "ownCar",
+              "rentalCar",
+              "ownMotor",
+              "rentalMotor",
+              "bike",
+              "rentalBike",
+              "other"
+            ]
+          },
+          "totalCost": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          }
+        }
+      },
+      "DeleteOptionResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string",
+            "description": "Key of the deleted option."
+          }
+        },
+        "required": [
+          "deleted",
+          "key"
+        ]
+      },
+      "DeselectOptionResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "deselected": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "deselected"
+        ]
+      },
+      "UpdateEventV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name of the event."
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "$ref": "#/components/schemas/CreateOptionLocationV1Dto"
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "concert",
+              "course",
+              "sport",
+              "entertainment",
+              "museum",
+              "trip",
+              "restaurant",
+              "shopping",
+              "other"
+            ]
+          },
+          "maxTravelTimeToEventInMinutes": {
+            "type": "number"
+          },
+          "totalCost": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "userUploadedImageUrl": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "ToggleEventResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "eventKey": {
+            "type": "string",
+            "description": "Key of the toggled event."
+          },
+          "selected": {
+            "type": "boolean",
+            "description": "New selected state after the toggle."
+          }
+        },
+        "required": [
+          "eventKey",
+          "selected"
+        ]
+      },
+      "DeleteEventResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean"
+          },
+          "eventKey": {
+            "type": "string",
+            "description": "Key of the deleted event."
+          }
+        },
+        "required": [
+          "deleted",
+          "eventKey"
+        ]
+      },
+      "TripAccessUserInfoV1Dto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "Kinde user id, present once the invitee has logged in at least once."
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name. May be empty for pending (un-claimed) invites."
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address on file for the invitee."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "TripAccessV1Dto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/TripAccessUserInfoV1Dto"
+          },
+          "accessLevel": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "edit",
+              "voter",
+              "view"
+            ],
+            "description": "Access level granted to this user on the trip."
+          }
+        },
+        "required": [
+          "user",
+          "accessLevel"
+        ]
+      },
+      "TripAccessListV1Dto": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TripAccessV1Dto"
+            }
+          }
+        },
+        "required": [
+          "users"
+        ]
+      },
+      "InviteUserV1Dto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address to invite. The user does not have to be signed up yet."
+          },
+          "accessLevel": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "edit",
+              "voter",
+              "view"
+            ],
+            "description": "Access level to grant."
+          }
+        },
+        "required": [
+          "email",
+          "accessLevel"
+        ]
+      },
+      "InviteUserResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "invited": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email that was invited."
+          }
+        },
+        "required": [
+          "invited",
+          "email"
+        ]
+      },
+      "UpdateAccessLevelV1Dto": {
+        "type": "object",
+        "properties": {
+          "accessLevel": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "edit",
+              "voter",
+              "view"
+            ],
+            "description": "New access level for the user."
+          }
+        },
+        "required": [
+          "accessLevel"
+        ]
+      },
+      "UpdateAccessLevelResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "updated": {
+            "type": "boolean"
+          },
+          "userId": {
+            "type": "string",
+            "description": "User id whose access was updated."
+          }
+        },
+        "required": [
+          "updated",
+          "userId"
+        ]
+      },
+      "RemoveAccessResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "removed": {
+            "type": "boolean",
+            "description": "True if a row was deleted; false if the user already had no access."
+          },
+          "userId": {
+            "type": "string",
+            "description": "User id whose access was removed."
+          }
+        },
+        "required": [
+          "removed",
+          "userId"
+        ]
+      },
+      "CreateInviteTokenV1Dto": {
+        "type": "object",
+        "properties": {
+          "accessLevel": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "edit",
+              "voter",
+              "view"
+            ],
+            "description": "Access level the resulting invite link will grant."
+          }
+        },
+        "required": [
+          "accessLevel"
+        ]
+      },
+      "InviteTokenV1Dto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Mongo id of the invite token row (used to revoke)."
+          },
+          "token": {
+            "type": "string",
+            "description": "Opaque token string. Concatenate with the invite URL prefix to share."
+          },
+          "inviteUrl": {
+            "type": "string",
+            "description": "Full URL the recipient can open to accept the invite."
+          },
+          "accessLevel": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "edit",
+              "voter",
+              "view"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this token expires."
+          }
+        },
+        "required": [
+          "token",
+          "inviteUrl",
+          "accessLevel",
+          "expiresAt"
+        ]
+      },
+      "InviteTokenListV1Dto": {
+        "type": "object",
+        "properties": {
+          "tokens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InviteTokenV1Dto"
+            }
+          }
+        },
+        "required": [
+          "tokens"
+        ]
+      },
+      "RevokeInviteTokenResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "revoked": {
+            "type": "boolean",
+            "description": "True if the token row was deleted; false if no matching token existed."
+          },
+          "tokenId": {
+            "type": "string",
+            "description": "Id of the invite token requested for revocation."
+          }
+        },
+        "required": [
+          "revoked",
+          "tokenId"
+        ]
+      },
+      "VoteOptionV1Dto": {
+        "type": "object",
+        "properties": {
+          "destinationKey": {
+            "type": "string",
+            "description": "Destination key the option belongs to."
+          },
+          "optionKey": {
+            "type": "string",
+            "description": "Option key inside the destination."
+          },
+          "value": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down",
+              "clear"
+            ],
+            "description": "Vote direction. 'clear' removes the caller's existing vote."
+          }
+        },
+        "required": [
+          "destinationKey",
+          "optionKey",
+          "value"
+        ]
+      },
+      "CastVoteResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "voted": {
+            "type": "boolean",
+            "description": "True if a vote was cast or updated; false if it was cleared."
+          },
+          "value": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down",
+              "clear"
+            ],
+            "description": "Echo of the requested value for confirmation."
+          }
+        },
+        "required": [
+          "voted",
+          "value"
+        ]
+      },
+      "VoteEventV1Dto": {
+        "type": "object",
+        "properties": {
+          "eventKey": {
+            "type": "string",
+            "description": "Event key inside the variant."
+          },
+          "value": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down",
+              "clear"
+            ],
+            "description": "Vote direction. 'clear' removes the caller's existing vote."
+          }
+        },
+        "required": [
+          "eventKey",
+          "value"
+        ]
+      },
+      "VoteUserV1Dto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "VoteV1Dto": {
+        "type": "object",
+        "properties": {
+          "vote": {
+            "type": "number",
+            "enum": [
+              -1,
+              1
+            ],
+            "description": "1 = up, -1 = down."
+          },
+          "user": {
+            "description": "User who cast the vote.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VoteUserV1Dto"
+              }
+            ]
+          },
+          "variantId": {
+            "type": "string",
+            "description": "Variant the vote is scoped to."
+          },
+          "destinationKey": {
+            "type": "string",
+            "description": "Destination key (omitted for variant-level / event-level votes)."
+          },
+          "optionKey": {
+            "type": "string",
+            "description": "For option votes this is the option's key; for event votes it is the event's key."
+          }
+        },
+        "required": [
+          "vote",
+          "user",
+          "variantId"
+        ]
+      },
+      "VoteListV1Dto": {
+        "type": "object",
+        "properties": {
+          "votes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VoteV1Dto"
+            }
+          }
+        },
+        "required": [
+          "votes"
+        ]
+      },
+      "GoalCoordinatesV1Dto": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ]
+      },
+      "GoalLocationV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "formattedAddress": {
+            "type": "string"
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/GoalCoordinatesV1Dto"
+          },
+          "googlePlaceId": {
+            "type": "string"
+          }
+        }
+      },
+      "GoalLinkV1Dto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL the link points to."
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "TravelGoalV1Dto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GoalLocationV1Dto"
+          },
+          "country": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "country",
+              "region",
+              "city",
+              "place",
+              "experience"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "dreaming",
+              "planning",
+              "visited"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "someday",
+              "soon",
+              "must_do"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "userUploadedImageUrl": {
+            "type": "string"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GoalLinkV1Dto"
+            }
+          },
+          "bestTimeToVisit": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "spring",
+                "summer",
+                "autumn",
+                "winter",
+                "year_round"
+              ]
+            }
+          },
+          "estimatedBudget": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "estimatedDuration": {
+            "type": "string"
+          },
+          "linkedTripId": {
+            "type": "string",
+            "description": "Trip id this goal is currently linked to (when status=planning or visited)."
+          },
+          "linkedTripName": {
+            "type": "string"
+          },
+          "visitedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "collectionIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "name",
+          "type",
+          "status",
+          "priority",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "GoalListV1Dto": {
+        "type": "object",
+        "properties": {
+          "goals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TravelGoalV1Dto"
+            }
+          }
+        },
+        "required": [
+          "goals"
+        ]
+      },
+      "CreateGoalV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Goal name (e.g. \"See the Northern Lights\")."
+          },
+          "description": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Free-form notes."
+          },
+          "location": {
+            "$ref": "#/components/schemas/GoalLocationV1Dto"
+          },
+          "country": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "country",
+              "region",
+              "city",
+              "place",
+              "experience"
+            ],
+            "description": "Defaults to \"place\" if omitted."
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "someday",
+              "soon",
+              "must_do"
+            ],
+            "description": "Defaults to \"someday\" if omitted."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "userUploadedImageUrl": {
+            "type": "string"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GoalLinkV1Dto"
+            }
+          },
+          "bestTimeToVisit": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "spring",
+                "summer",
+                "autumn",
+                "winter",
+                "year_round"
+              ]
+            }
+          },
+          "estimatedBudget": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "estimatedDuration": {
+            "type": "string",
+            "description": "Free-form duration string (e.g. \"3 days\", \"1 week\")."
+          },
+          "collectionIds": {
+            "description": "Collection ids this goal will be added to.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "QuickAddGoalV1Dto": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "string",
+            "description": "A name or URL — the server detects which and stores accordingly."
+          }
+        },
+        "required": [
+          "input"
+        ]
+      },
+      "UpdateGoalV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GoalLocationV1Dto"
+          },
+          "country": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "country",
+              "region",
+              "city",
+              "place",
+              "experience"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "someday",
+              "soon",
+              "must_do"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "userUploadedImageUrl": {
+            "type": "string"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GoalLinkV1Dto"
+            }
+          },
+          "bestTimeToVisit": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "spring",
+                "summer",
+                "autumn",
+                "winter",
+                "year_round"
+              ]
+            }
+          },
+          "estimatedBudget": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "estimatedDuration": {
+            "type": "string"
+          },
+          "collectionIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "DeleteGoalResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "description": "Id of the deleted goal."
+          }
+        },
+        "required": [
+          "deleted",
+          "id"
+        ]
+      },
+      "LinkGoalToTripV1Dto": {
+        "type": "object",
+        "properties": {
+          "tripId": {
+            "type": "string",
+            "description": "Trip id to link the goal to."
+          },
+          "tripName": {
+            "type": "string",
+            "description": "Trip name (echoed back on the goal for display)."
+          }
+        },
+        "required": [
+          "tripId",
+          "tripName"
+        ]
+      },
+      "MarkGoalVisitedV1Dto": {
+        "type": "object",
+        "properties": {
+          "visitedDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Defaults to \"now\" when omitted."
+          }
+        }
+      },
+      "GoalCollectionHeaderV1Dto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "emoji": {
+            "type": "string"
+          },
+          "coverImageUrl": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "private",
+              "shared",
+              "public"
+            ]
+          },
+          "goalCount": {
+            "type": "number"
+          },
+          "visitedCount": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "visibility",
+          "goalCount",
+          "visitedCount",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CollectionListV1Dto": {
+        "type": "object",
+        "properties": {
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GoalCollectionHeaderV1Dto"
+            }
+          }
+        },
+        "required": [
+          "collections"
+        ]
+      },
+      "GoalCollectionV1Dto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "emoji": {
+            "type": "string"
+          },
+          "coverImageUrl": {
+            "type": "string"
+          },
+          "goalIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "goals": {
+            "description": "Populated on findById / share-token reads.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TravelGoalV1Dto"
+            }
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "private",
+              "shared",
+              "public"
+            ]
+          },
+          "shareToken": {
+            "type": "string",
+            "description": "Opaque token for non-private collections; safe to share."
+          },
+          "goalCount": {
+            "type": "number"
+          },
+          "visitedCount": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "name",
+          "goalIds",
+          "visibility",
+          "goalCount",
+          "visitedCount",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateCollectionV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Collection name (e.g. \"Bucket list 2030\")."
+          },
+          "description": {
+            "type": "string"
+          },
+          "emoji": {
+            "type": "string",
+            "description": "Emoji for a fun visual identity (e.g. \"🌍\")."
+          },
+          "coverImageUrl": {
+            "type": "string"
+          },
+          "goalIds": {
+            "description": "Goal ids to seed the collection with.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "private",
+              "shared",
+              "public"
+            ],
+            "description": "Defaults to \"private\"."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateCollectionV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "emoji": {
+            "type": "string"
+          },
+          "coverImageUrl": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "private",
+              "shared",
+              "public"
+            ],
+            "description": "Setting to non-private will auto-generate a share token if absent."
+          }
+        }
+      },
+      "DeleteCollectionResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "description": "Id of the deleted collection."
+          }
+        },
+        "required": [
+          "deleted",
+          "id"
+        ]
+      },
+      "ModifyCollectionGoalsV1Dto": {
+        "type": "object",
+        "properties": {
+          "add": {
+            "description": "Goal ids to add to the collection.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "remove": {
+            "description": "Goal ids to remove from the collection.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CollectionShareTokenV1Dto": {
+        "type": "object",
+        "properties": {
+          "shareToken": {
+            "type": "string",
+            "description": "Opaque share token. Treat as a credential."
+          }
+        },
+        "required": [
+          "shareToken"
+        ]
+      },
+      "MeV1Dto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "The Kinde user ID associated with the calling API key."
+          },
+          "email": {
+            "type": "string",
+            "description": "User email (from Kinde, may be null if Kinde has no email on file)."
+          },
+          "name": {
+            "type": "string",
+            "description": "User display name (from Kinde)."
+          },
+          "apiKeyName": {
+            "type": "string",
+            "description": "The name field of the API key that authorized the request."
+          }
+        },
+        "required": [
+          "userId",
+          "apiKeyName"
+        ]
+      },
+      "ApiKeyListItemV1Dto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUsed": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isCurrent": {
+            "type": "boolean",
+            "description": "True for the key authenticating the current request."
+          }
+        },
+        "required": [
+          "name",
+          "createdAt",
+          "isCurrent"
+        ]
+      },
+      "ApiKeyListV1Dto": {
+        "type": "object",
+        "properties": {
+          "keys": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiKeyListItemV1Dto"
+            }
+          }
+        },
+        "required": [
+          "keys"
+        ]
+      },
+      "RevokeApiKeyResultV1Dto": {
+        "type": "object",
+        "properties": {
+          "revoked": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "revoked"
+        ]
+      }
+    }
+  }
+}
