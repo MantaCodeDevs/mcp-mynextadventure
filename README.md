@@ -4,11 +4,11 @@ A remote [Model Context Protocol](https://modelcontextprotocol.io) server that l
 assistant plan trips in [MyNextAdventure](https://mynextadventure.cloud) — create a trip,
 lay out the itinerary, propose flights and hotels, add things to do, and share the result.
 
-It runs as a Cloudflare Worker (Durable Object backed) and is a thin, authenticated proxy in
-front of the MyNextAdventure public API: it holds no trip data of its own, and forwards every
-call to the API under the caller's own API key.
+It runs as a stateless Cloudflare Worker and is a thin, authenticated proxy in front of the
+MyNextAdventure public API: it holds no trip data of its own, and forwards every call to the
+API under the caller's own API key.
 
-- **Production:** `https://mcp.mynextadventure.cloud/sse` (also `…/mcp` for Streamable HTTP)
+- **Production:** `https://mcp.mynextadventure.cloud/mcp` (Streamable HTTP)
 - **Upstream API:** `https://api.mynextadventure.cloud` (v1 public API)
 
 ## Authentication
@@ -23,12 +23,10 @@ The worker forwards it to the API as `X-API-Key`. Requests without a key get a `
 Whatever the key can do, the assistant can do: keys are per-user, so the assistant only ever
 sees that user's trips.
 
-**Where your key lives.** Each MCP connection gets its own Durable Object session, and the
-agents SDK persists that session's props — including your key — to the session's storage so it
-survives the worker hibernating between messages. In other words the key is held for the
-duration of your session in isolated per-session storage, and passed through to the
-MyNextAdventure API; it is never logged and is not shared between sessions or users. Revoke a
-key any time in the app under Settings → API keys.
+**Where your key lives.** The server is stateless: your key is read from the headers of each
+request, used to make that one call to the MyNextAdventure API, and never stored — there is no
+session storage and no Durable Object holding it between requests. It is never logged and is
+not shared between requests or users. Revoke a key any time in the app under Settings → API keys.
 
 ## Tools
 
@@ -82,7 +80,7 @@ Settings → Developer → Edit Config, then add:
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://mcp.mynextadventure.cloud/sse",
+        "https://mcp.mynextadventure.cloud/mcp",
         "--header",
         "Authorization: Bearer ${MNA_API_KEY}"
       ],
@@ -112,8 +110,8 @@ Settings → Connectors → Add custom connector, MCP server URL
 
 ### Any other MCP client
 
-Streamable HTTP at `/mcp`, legacy SSE at `/sse`. `GET /` returns a small JSON health
-document with the endpoint list and tool count.
+Streamable HTTP at `/mcp`. `GET /` returns a small JSON health document with the endpoint
+and tool count.
 
 ## Development
 

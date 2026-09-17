@@ -3,7 +3,6 @@
 // Runtime types generated with workerd@1.20250525.0 2025-03-10 nodejs_compat
 declare namespace Cloudflare {
 	interface Env {
-		MCP_OBJECT: DurableObjectNamespace<import("./src/index").MyMCP>;
 	}
 }
 interface Env extends Cloudflare.Env {}
