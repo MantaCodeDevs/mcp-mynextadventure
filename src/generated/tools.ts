@@ -42,11 +42,21 @@ function confirmed(
 	}
 }
 
+/** Fingerprint of the API contract these tools were generated from. */
+export const CONTRACT_HASH = "1cdbde2db509";
+
 export const TOOLS: ToolDefinition[] = [
 	{
 		name: "whoami",
+		title: "Who Am I",
 		description: "Check which MyNextAdventure account the current API key belongs to. Use this when you are unsure whether the connection is authenticated, or to confirm whose trips you are about to change before making edits.",
 		operations: ["MeV1Controller_getMe"],
+		annotations: {
+			readOnlyHint: true,
+			destructiveHint: false,
+			idempotentHint: true,
+			openWorldHint: true,
+		},
 		inputShape: {},
 		resolve: () => ({
 			method: "GET",
@@ -55,8 +65,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "list_trips",
+		title: "List Trips",
 		description: "List the trips the user owns or collaborates on. Start here whenever the user refers to a trip by name (\"my Japan trip\") so you can resolve it to a trip id. Statuses: 'planning' is actively being worked on, 'ready' is planned but not taken yet, 'finished' is in the past, 'cancelled' was dropped. Call with no filters to see everything.",
 		operations: ["TripsV1Controller_findAll"],
+		annotations: {
+			readOnlyHint: true,
+			destructiveHint: false,
+			idempotentHint: true,
+			openWorldHint: true,
+		},
 		inputShape: {
 			includeExample: z.boolean().describe("Include the built-in example trip in the results. Leave unset for real trips only.").optional(),
 			status: z.enum(["planning", "ready", "finished", "cancelled"]).describe("Only return trips in this lifecycle status.").optional(),
@@ -69,8 +86,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "get_trip",
+		title: "Get Trip",
 		description: "Fetch one trip in full: its variants, destinations, accommodation / transport / getting-around options and events. Call this before changing anything — every other tool needs the variant ids, destination keys and option keys this returns.",
 		operations: ["TripsV1Controller_findOne"],
+		annotations: {
+			readOnlyHint: true,
+			destructiveHint: false,
+			idempotentHint: true,
+			openWorldHint: true,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			includeAllOptions: z.boolean().describe("Also return the options that are not currently selected. Set true when comparing alternatives.").optional(),
@@ -83,11 +107,18 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "create_trip",
+		title: "Create Trip",
 		description: "Create a new, empty trip — the container everything else hangs off. This is step 1 of planning: create the trip, then create_variant for the dates, then add_destination, then the accommodation / transport / event options. Ask the user for a name if they have not given one.",
 		operations: ["TripWritesV1Controller_create"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: false,
+			openWorldHint: false,
+		},
 		inputShape: {
 			data: z.object({
-				name: z.string().describe("Trip name as shown in the UI."),
+				name: z.string().describe("Trip name as shown in the UI, exactly as a human would call it. Never embed dates, costs, status or commentary here."),
 				coverPhoto: z.string().describe("URL of the cover photo.").nullable().optional(),
 			}).describe("The new trip's details."),
 		},
@@ -99,12 +130,19 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "update_trip",
+		title: "Update Trip",
 		description: "Change top-level trip fields: rename it, set a cover photo, or move it through its lifecycle (planning -> ready once the plan is settled, finished or cancelled afterwards). Does not touch variants, destinations or options.",
 		operations: ["TripWritesV1Controller_update"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: true,
+			openWorldHint: false,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			data: z.object({
-				name: z.string().describe("New trip name.").optional(),
+				name: z.string().describe("New trip name, exactly as a human would call it. Never embed dates, costs, status or commentary here.").optional(),
 				coverPhoto: z.string().describe("URL of the new cover photo.").optional(),
 				status: z.enum(["planning", "ready", "finished", "cancelled"]).describe("New trip status.").optional(),
 			}).describe("Fields to change. Omitted fields are left as they are.").optional(),
@@ -117,8 +155,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "create_trip_share_link",
+		title: "Create Trip Share Link",
 		description: "Create (or refresh) a public read-only link to the trip so the user can send the plan to people without an account. Returns the shareable URL. Use when the user asks to share, send or publish a trip.",
 		operations: ["TripWritesV1Controller_createShareLink"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: true,
+			openWorldHint: false,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 		},
@@ -129,12 +174,26 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "create_variant",
+		title: "Create Variant",
 		description: "Add an alternative version of the trip — \"Beach option\" vs \"Mountain option\", or the same route on different dates. A trip needs at least one variant before it can hold destinations or options, so create one right after create_trip. Dates live on the variant: either exact start/end dates or a flexible window with min/max nights.",
 		operations: ["VariantsV1Controller_create"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: false,
+			openWorldHint: false,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			data: z.object({
 				name: z.string().describe("Variant name (e.g. \"Beach option\", \"Mountain option\")."),
+				participants: z.object({
+					adults: z.number().describe("Number of adults travelling on this variant. At least 1."),
+					children: z.array(z.object({
+						age: z.number().describe("Age of the child in years, at the time of the trip."),
+					})).describe("Children travelling on this variant, one entry per child. Omit or send [] for an adults-only trip.").optional(),
+					numberOfRooms: z.number().describe("Number of rooms required.").optional(),
+				}).describe("Who is travelling. Defaults to a single adult when omitted, so send it whenever the trip is not solo — the group size drives the budget breakdown.").optional(),
 				dates: z.union([
 					z.object({
 						startDate: z.string().describe("ISO 8601 date-time, e.g. 2026-05-21T09:00:00.000Z."),
@@ -148,7 +207,7 @@ export const TOOLS: ToolDefinition[] = [
 						minNights: z.number(),
 						maxNights: z.number(),
 					}),
-				]).describe("Either an exact-dates or flexi-dates structure for this variant.").optional(),
+				]).describe("Dates for this variant — required. Either exact dates ({ startDate, endDate }) or flexible dates ({ departLeavingNotBeforeDate, departArrivingNotAfterDate, returnLeavingNotBeforeDate, returnArrivingNotAfterDate, minNights, maxNights })."),
 				notes: z.string().describe("Free-form variant notes.").optional(),
 			}).describe("The new variant's name, dates and notes."),
 		},
@@ -160,8 +219,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "duplicate_variant",
+		title: "Duplicate Variant",
 		description: "Copy a variant, with all of its destinations and options, into a new variant on the same trip. Use when the user wants to explore a tweak (\"same trip but a week later\", \"same route, cheaper hotels\") without losing the original.",
 		operations: ["VariantsV1Controller_duplicate"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: false,
+			openWorldHint: false,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
@@ -173,8 +239,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "update_variant",
-		description: "Rename a variant, change its dates (exact dates or a flexible window), or edit its notes.",
+		title: "Update Variant",
+		description: "Rename a variant, change its dates (exact dates or a flexible window), edit its notes, or set who is travelling. Returns the variant as it now stands — read the response to confirm your change landed rather than assuming it did.",
 		operations: ["VariantsV1Controller_update"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: true,
+			openWorldHint: false,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
@@ -194,6 +267,13 @@ export const TOOLS: ToolDefinition[] = [
 						maxNights: z.number(),
 					}),
 				]).describe("Either an exact-dates or flexi-dates structure for this variant.").optional(),
+				participants: z.object({
+					adults: z.number().describe("Number of adults travelling on this variant. At least 1."),
+					children: z.array(z.object({
+						age: z.number().describe("Age of the child in years, at the time of the trip."),
+					})).describe("Children travelling on this variant, one entry per child. Omit or send [] for an adults-only trip.").optional(),
+					numberOfRooms: z.number().describe("Number of rooms required.").optional(),
+				}).describe("Who is travelling. Replaces the whole structure — send the full participant list, not just the part that changed.").optional(),
 				notes: z.string().describe("Free-form variant notes.").optional(),
 			}).describe("Fields to change. Omitted fields are left as they are.").optional(),
 		},
@@ -205,8 +285,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "select_variant",
+		title: "Select Variant",
 		description: "Mark one variant as the trip's chosen plan. Use when the user decides between alternatives; the choice is reversible, so selecting a different variant later is fine.",
 		operations: ["TripsV1Controller_selectVariant"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: true,
+			openWorldHint: false,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
@@ -218,8 +305,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "add_destination",
+		title: "Add Destination",
 		description: "Add a place the traveller will stay at within a variant, in itinerary order (e.g. \"Lisbon, Portugal\"). Destinations are what accommodation, transport and getting-around options attach to, so add these before adding options. Set isReturnToHome for the final leg home.",
 		operations: ["DestinationsV1Controller_create"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: false,
+			openWorldHint: false,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
@@ -239,8 +333,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "update_destination",
+		title: "Update Destination",
 		description: "Change a destination's place name, its arrival/departure dates, or its notes. Use this to pin down when the traveller is in each place once the dates firm up, rather than deleting and re-adding the stop.",
 		operations: ["DestinationsV1Controller_update"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: true,
+			openWorldHint: false,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
@@ -261,8 +362,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "reorder_destinations",
+		title: "Reorder Destinations",
 		description: "Rearrange the itinerary order of a variant's destinations. Use after adding stops out of order, instead of deleting and re-adding them.",
 		operations: ["DestinationsV1Controller_reorder"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: true,
+			openWorldHint: false,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
@@ -278,19 +386,27 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "add_accommodation_option",
-		description: "Propose somewhere to stay at a destination — hotel, hostel, apartment, house or camping. Add several options to the same destination so the user can compare them, then use select_destination_option once they pick one. Always include the total cost and currency, otherwise the trip budget will be wrong.",
+		title: "Add Accommodation Option",
+		description: "Propose somewhere to stay at a destination — hotel, hostel, apartment, house or camping. Add several options to the same destination so the user can compare them, then use select_destination_option once they pick one. Always include the total cost and currency, otherwise the trip budget will be wrong. Keep name a clean display name — price, town, dates and commentary belong in their own fields, not in name.",
 		operations: ["TripsV1Controller_addAccommodationOption"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: false,
+			openWorldHint: true,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
 			destinationKey: z.string().describe("Key of the destination inside the variant, from get_trip (e.g. \"destination-1\")."),
 			data: z.object({
-				name: z.string().describe("Name of the accommodation (e.g. \"Hilton Times Square\")."),
+				name: z.string().describe("Display name of the accommodation exactly as a human would call it (e.g. \"Villa Ave\"). Never embed price, town, dates, status or commentary here — those belong in totalCost, location, checkIn/checkOut and notes."),
 				type: z.enum(["hotel", "hostel", "apartment", "house", "camping", "other"]).describe("Type of accommodation."),
 				totalCost: z.number().describe("Total cost for the stay."),
 				currency: z.string().describe("Currency code (e.g. \"USD\")."),
 				location: z.object({
 					googlePlaceId: z.string().optional(),
+					locationiqPlaceId: z.string().optional(),
 					name: z.string().optional(),
 					address: z.string().optional(),
 					latitude: z.number().optional(),
@@ -305,8 +421,18 @@ export const TOOLS: ToolDefinition[] = [
 					numberOfRooms: z.number().optional(),
 					sizeInM2: z.number().optional(),
 				}).describe("Room count and size. Required, but may be an empty object {} when the listing does not say."),
-				notes: z.string().optional(),
+				notes: z.string().describe("Free-form commentary: provenance, caveats, \"user has stayed here before\", trade-offs. Anything without a dedicated field goes here, not in name.").optional(),
 				sourceUrl: z.string().optional(),
+				imageUrl: z.string().describe("URL of a photo of the accommodation. Hotlinked, not copied.").optional(),
+				description: z.string().describe("Short description of the accommodation.").optional(),
+				url: z.string().describe("Link to the listing or the property website.").optional(),
+				features: z.array(z.enum(["beachfront", "beachNearby", "privateBeachArea", "swimmingPool", "kidsPool", "kidsPlayArea", "privateKitchen", "sharedKitchen", "washingMachine", "familyRooms", "airConditioning", "freeParking", "freeWifi", "balconyTerrace", "petsAllowed"])).describe("Facilities this accommodation offers.").optional(),
+				externalRating: z.object({
+					score: z.number().describe("Rating score as published by the source (e.g. 8.8)."),
+					scale: z.number().describe("Maximum of the rating scale (e.g. 10 for Booking.com, 5 for Google). Required whenever score is set."),
+					count: z.number().describe("Number of reviews behind the score.").optional(),
+					source: z.string().describe("Where the rating came from (e.g. \"booking.com\").").optional(),
+				}).describe("Guest rating from an external source.").optional(),
 			}).describe("The accommodation option to propose."),
 		},
 		resolve: (args) => ({
@@ -317,8 +443,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "add_transport_option",
+		title: "Add Transport Option",
 		description: "Propose a way of travelling TO a destination — flight, train, bus, ferry, car. One option per candidate itinerary; add several so the user can compare price against travel time. Set roundTrip when the price covers the return leg too. For moving around once there, use add_getting_around_option instead.",
 		operations: ["TripsV1Controller_addTransportOption"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: false,
+			openWorldHint: true,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
@@ -328,6 +461,7 @@ export const TOOLS: ToolDefinition[] = [
 				currency: z.string(),
 				from: z.object({
 					googlePlaceId: z.string().optional(),
+					locationiqPlaceId: z.string().optional(),
 					name: z.string().optional(),
 					address: z.string().optional(),
 					latitude: z.number().optional(),
@@ -335,6 +469,7 @@ export const TOOLS: ToolDefinition[] = [
 				}).optional(),
 				to: z.object({
 					googlePlaceId: z.string().optional(),
+					locationiqPlaceId: z.string().optional(),
 					name: z.string().optional(),
 					address: z.string().optional(),
 					latitude: z.number().optional(),
@@ -349,7 +484,7 @@ export const TOOLS: ToolDefinition[] = [
 				outboundIncludesReturnCost: z.boolean().optional(),
 				roundTripReturn: z.boolean().optional(),
 				returnTransportOptionKey: z.string().optional(),
-				notes: z.string().optional(),
+				notes: z.string().describe("Free-form commentary: provenance, caveats, trade-offs. Anything without a dedicated field goes here.").optional(),
 				link: z.string().optional(),
 			}).describe("The transport option to propose."),
 		},
@@ -361,8 +496,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "add_getting_around_option",
+		title: "Add Getting-Around Option",
 		description: "Propose how the traveller moves around locally once at a destination — walking, public transport, rental car, bike, ride share. Use this for local mobility budgets; the journey between destinations belongs in add_transport_option.",
 		operations: ["TripsV1Controller_addGettingAroundOption"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: false,
+			openWorldHint: false,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
@@ -371,7 +513,7 @@ export const TOOLS: ToolDefinition[] = [
 				type: z.enum(["walk", "publicTransport", "rideShare", "ownCar", "rentalCar", "ownMotor", "rentalMotor", "bike", "rentalBike", "other"]).optional(),
 				totalCost: z.number(),
 				currency: z.string(),
-				notes: z.string().optional(),
+				notes: z.string().describe("Free-form commentary: provenance, caveats, trade-offs. Anything without a dedicated field goes here.").optional(),
 				link: z.string().optional(),
 			}).describe("The getting-around option to propose."),
 		},
@@ -383,8 +525,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "update_destination_option",
+		title: "Update Destination Option",
 		description: "Edit an existing accommodation, transport or getting-around option — correct a price, add a booking link, adjust check-in dates. Say which kind of option it is and pass the option key from get_trip. Only the fields you send are changed.",
 		operations: ["OptionsWritesV1Controller_update"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: true,
+			openWorldHint: true,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
@@ -392,15 +541,16 @@ export const TOOLS: ToolDefinition[] = [
 			kind: z.enum(["accommodation", "transport", "getting-around"]).describe("Which kind of option is being edited."),
 			optionKey: z.string().describe("Key of the accommodation / transport / getting-around option, from get_trip. Same value that select_destination_option calls optionId — the API names it inconsistently."),
 			data: z.object({
-				name: z.string().describe("Name of the accommodation.").optional(),
+				name: z.string().describe("Display name of the accommodation exactly as a human would call it (e.g. \"Villa Ave\") — never embed price, town, dates, status or commentary here; those belong in totalCost, location, checkIn/checkOut and notes. Pass null to clear.").nullable().optional(),
 				type: z.union([
-					z.enum(["hotel", "hostel", "apartment", "house", "camping", "other"]).describe("Type of accommodation."),
+					z.enum(["hotel", "hostel", "apartment", "house", "camping", "other"]).describe("Type of accommodation. Pass null to clear.").nullable(),
 					z.enum(["walk", "publicTransport", "rideShare", "ownCar", "rentalCar", "ownMotor", "rentalMotor", "bike", "rentalBike", "other"]),
 				]).describe("Accommodation kind (hotel, hostel, apartment, house, camping, other) when kind is 'accommodation'; travel mode (walk, publicTransport, rentalCar, ...) when kind is 'getting-around'.").optional(),
 				totalCost: z.number().describe("Total cost for the stay.").optional(),
 				currency: z.string().describe("Currency code (e.g. \"USD\").").optional(),
 				location: z.object({
 					googlePlaceId: z.string().optional(),
+					locationiqPlaceId: z.string().optional(),
 					name: z.string().optional(),
 					address: z.string().optional(),
 					latitude: z.number().optional(),
@@ -410,15 +560,29 @@ export const TOOLS: ToolDefinition[] = [
 				checkOut: z.string().describe("Check-out date. ISO 8601 date-time, e.g. 2026-05-21T09:00:00.000Z.").optional(),
 				checkInTime: z.string().describe("Check-in time of day (e.g. \"15:00\").").optional(),
 				checkOutTime: z.string().describe("Check-out time of day (e.g. \"11:00\").").optional(),
-				freeCancellationUntil: z.string().describe("Free cancellation deadline. Pass null to clear. ISO 8601 date-time, e.g. 2026-05-21T09:00:00.000Z.").optional(),
+				freeCancellationUntil: z.string().describe("Free cancellation deadline. Pass null to clear. ISO 8601 date-time, e.g. 2026-05-21T09:00:00.000Z.").nullable().optional(),
 				roomDetails: z.object({
 					numberOfRooms: z.number().optional(),
 					sizeInM2: z.number().optional(),
 				}).optional(),
-				notes: z.string().optional(),
-				sourceUrl: z.string().optional(),
+				notes: z.union([
+					z.string().describe("Free-form commentary: provenance, caveats, \"user has stayed here before\", trade-offs. Anything without a dedicated field goes here, not in name. Pass null to clear.").nullable(),
+					z.string().describe("Free-form commentary: provenance, caveats, trade-offs. Anything without a dedicated field goes here."),
+				]).describe("Free-form commentary: provenance, caveats, \"user has stayed here before\", trade-offs. Anything without a dedicated field goes here, not in name. Pass null to clear.").optional(),
+				sourceUrl: z.string().describe("Link the option was captured from. Pass null to clear.").nullable().optional(),
+				imageUrl: z.string().describe("URL of a photo of the accommodation. Hotlinked, not copied. Pass null to clear.").nullable().optional(),
+				description: z.string().describe("Short description of the accommodation. Pass null to clear.").nullable().optional(),
+				url: z.string().describe("Link to the listing or the property website. Pass null to clear.").nullable().optional(),
+				features: z.array(z.enum(["beachfront", "beachNearby", "privateBeachArea", "swimmingPool", "kidsPool", "kidsPlayArea", "privateKitchen", "sharedKitchen", "washingMachine", "familyRooms", "airConditioning", "freeParking", "freeWifi", "balconyTerrace", "petsAllowed"])).describe("Facilities this accommodation offers.").optional(),
+				externalRating: z.object({
+					score: z.number().describe("Rating score as published by the source (e.g. 8.8)."),
+					scale: z.number().describe("Maximum of the rating scale (e.g. 10 for Booking.com, 5 for Google). Required whenever score is set."),
+					count: z.number().describe("Number of reviews behind the score.").optional(),
+					source: z.string().describe("Where the rating came from (e.g. \"booking.com\").").optional(),
+				}).describe("Guest rating from an external source. Pass null to clear.").nullable().optional(),
 				from: z.object({
 					googlePlaceId: z.string().optional(),
+					locationiqPlaceId: z.string().optional(),
 					name: z.string().optional(),
 					address: z.string().optional(),
 					latitude: z.number().optional(),
@@ -426,6 +590,7 @@ export const TOOLS: ToolDefinition[] = [
 				}).optional(),
 				to: z.object({
 					googlePlaceId: z.string().optional(),
+					locationiqPlaceId: z.string().optional(),
 					name: z.string().optional(),
 					address: z.string().optional(),
 					latitude: z.number().optional(),
@@ -451,15 +616,22 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "select_destination_option",
-		description: "Mark one accommodation / transport / getting-around option as the one the traveller will actually use, or clear the current choice. Pass optionId to select that option; omit optionId and pass kind to deselect whatever is currently selected of that kind. Prefer this over deleting the alternatives — they stay available for comparison.",
+		title: "Select Destination Option",
+		description: "Mark one accommodation / transport / getting-around option as the one the traveller will actually use, or clear the current choice. Always say which kind of option it is; pass optionId to select that option, or omit optionId to deselect whatever is currently selected of that kind. Returns the destination as it now stands, so you can see which option ended up selected. Prefer this over deleting the alternatives — they stay available for comparison.",
 		operations: ["TripsV1Controller_selectOption", "OptionsWritesV1Controller_deselect"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: true,
+			openWorldHint: false,
+		},
 		inputShape: {
 			action: z.enum(["select", "deselect"]).describe("'select' (default) marks optionId as chosen; 'deselect' clears the current choice for the given kind.").optional(),
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
 			destinationKey: z.string().describe("Key of the destination inside the variant, from get_trip (e.g. \"destination-1\")."),
 			optionId: z.string().describe("Key of the accommodation / transport / getting-around option, from get_trip. Same value that other tools call optionKey — the API names it inconsistently. Required when action is 'select'.").optional(),
-			kind: z.enum(["accommodation", "transport", "getting-around"]).describe("Which kind of option to clear. Required when deselecting.").optional(),
+			kind: z.enum(["accommodation", "transport", "getting-around"]).describe("Which kind of option this is. The option key alone does not say which of the three lists it belongs to."),
 		},
 		resolve: (args) => {
 			const action = (args["action"] as string | undefined) ?? "select";
@@ -468,11 +640,12 @@ export const TOOLS: ToolDefinition[] = [
 					return {
 						method: "PUT",
 						path: `/v1/trips/${enc(args["tripId"])}/variants/${enc(args["variantId"])}/destinations/${enc(args["destinationKey"])}/options/${enc(req(args, "optionId", "action", "select"))}/select`,
+						body: { type: args["kind"] },
 					};
 				case "deselect":
 					return {
 						method: "PUT",
-						path: `/v1/trips/${enc(args["tripId"])}/variants/${enc(args["variantId"])}/destinations/${enc(args["destinationKey"])}/options/${enc(req(args, "kind", "action", "deselect"))}/deselect`,
+						path: `/v1/trips/${enc(args["tripId"])}/variants/${enc(args["variantId"])}/destinations/${enc(args["destinationKey"])}/options/${enc(args["kind"])}/deselect`,
 					};
 				default:
 					throw new Error(
@@ -483,13 +656,20 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "add_event",
+		title: "Add Event",
 		description: "Add something to do during the trip — a museum, concert, restaurant, tour or activity. Events belong to the variant rather than to a single destination, and can be scheduled with start/end times or left unscheduled as ideas.",
 		operations: ["TripsV1Controller_addEventOption"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: false,
+			openWorldHint: true,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
 			data: z.object({
-				name: z.string().describe("Event name (e.g. \"Louvre Museum\")."),
+				name: z.string().describe("Display name of the event exactly as a human would call it (e.g. \"Louvre Museum\"). Never embed price, dates, status or commentary here — those belong in totalCost, start/end and notes."),
 				start: z.string().describe("Start datetime in ISO 8601. ISO 8601 date-time, e.g. 2026-05-21T09:00:00.000Z.").optional(),
 				end: z.string().describe("End datetime in ISO 8601. ISO 8601 date-time, e.g. 2026-05-21T09:00:00.000Z.").optional(),
 				totalCost: z.number().describe("Total cost of the event/ticket.").optional(),
@@ -497,14 +677,19 @@ export const TOOLS: ToolDefinition[] = [
 				link: z.string().describe("URL for booking or more information.").optional(),
 				location: z.object({
 					googlePlaceId: z.string().optional(),
+					locationiqPlaceId: z.string().optional(),
 					name: z.string().optional(),
-					formattedAddress: z.string().optional(),
+					formattedAddress: z.string().describe("Full postal address. Takes precedence over `address` when both are sent.").optional(),
+					address: z.string().describe("Alias of `formattedAddress`, matching the option endpoints.").optional(),
 					coordinates: z.object({
 						lat: z.number().describe("Latitude."),
 						lng: z.number().describe("Longitude."),
-					}).optional(),
+					}).describe("Coordinates as `{ lat, lng }`. Takes precedence over `latitude`/`longitude` when both are sent.").optional(),
+					latitude: z.number().describe("Alias of `coordinates.lat`, matching the option endpoints. Must be sent with `longitude`.").optional(),
+					longitude: z.number().describe("Alias of `coordinates.lng`, matching the option endpoints. Must be sent with `latitude`.").optional(),
 				}).optional(),
-				notes: z.string().optional(),
+				notes: z.string().describe("Free-form commentary: provenance, caveats, trade-offs. Anything without a dedicated field goes here, not in name.").optional(),
+				userUploadedImageUrl: z.string().describe("Photo of the place, shown on the map popup. Must be a directly-linkable image URL that allows hotlinking — Wikimedia Commons works, most search-result URLs do not.").optional(),
 			}).describe("The event to add."),
 		},
 		resolve: (args) => ({
@@ -515,22 +700,35 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "update_event",
+		title: "Update Event",
 		description: "Edit an existing event: fix its time, price, location, booking link or notes. Use when the user has new information about an activity that is already on the plan (\"the tour starts at 10, not 9\").",
 		operations: ["EventsWritesV1Controller_update"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: true,
+			openWorldHint: true,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
 			eventKey: z.string().describe("Key of the event on the variant, from get_trip."),
 			data: z.object({
-				name: z.string().describe("Display name of the event.").optional(),
+				name: z.string().describe("Display name of the event exactly as a human would call it (e.g. \"Louvre Museum\"). Never embed price, dates, status or commentary here — those belong in totalCost, start/end and notes.").optional(),
 				start: z.string().describe("ISO 8601 date-time, e.g. 2026-05-21T09:00:00.000Z.").optional(),
 				end: z.string().describe("ISO 8601 date-time, e.g. 2026-05-21T09:00:00.000Z.").optional(),
 				location: z.object({
 					googlePlaceId: z.string().optional(),
+					locationiqPlaceId: z.string().optional(),
 					name: z.string().optional(),
-					address: z.string().optional(),
-					latitude: z.number().optional(),
-					longitude: z.number().optional(),
+					formattedAddress: z.string().describe("Full postal address. Takes precedence over `address` when both are sent.").optional(),
+					address: z.string().describe("Alias of `formattedAddress`, matching the option endpoints.").optional(),
+					coordinates: z.object({
+						lat: z.number().describe("Latitude."),
+						lng: z.number().describe("Longitude."),
+					}).describe("Coordinates as `{ lat, lng }`. Takes precedence over `latitude`/`longitude` when both are sent.").optional(),
+					latitude: z.number().describe("Alias of `coordinates.lat`, matching the option endpoints. Must be sent with `longitude`.").optional(),
+					longitude: z.number().describe("Alias of `coordinates.lng`, matching the option endpoints. Must be sent with `latitude`.").optional(),
 				}).optional(),
 				eventType: z.enum(["concert", "course", "sport", "entertainment", "museum", "trip", "restaurant", "shopping", "other"]).optional(),
 				maxTravelTimeToEventInMinutes: z.number().optional(),
@@ -538,7 +736,7 @@ export const TOOLS: ToolDefinition[] = [
 				currency: z.string().optional(),
 				link: z.string().optional(),
 				userUploadedImageUrl: z.string().optional(),
-				notes: z.string().optional(),
+				notes: z.string().describe("Free-form commentary: provenance, caveats, trade-offs. Anything without a dedicated field goes here, not in name.").optional(),
 			}).describe("Fields to change. Omitted fields are left as they are.").optional(),
 		},
 		resolve: (args) => ({
@@ -549,8 +747,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "toggle_event",
+		title: "Toggle Event",
 		description: "Flip an event between \"we are doing this\" and \"just an idea\" on the variant. Use when the user commits to, or backs out of, an activity — this keeps the event around, unlike delete_trip_item.",
 		operations: ["EventsWritesV1Controller_toggle"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: false,
+			openWorldHint: false,
+		},
 		inputShape: {
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
 			variantId: z.string().describe("Id of the trip variant (an alternative version of the trip), from get_trip."),
@@ -563,8 +768,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "delete_trip_item",
+		title: "Delete Trip Item",
 		description: "Permanently delete part of a trip: a variant, a destination, a destination option, or an event. Use only when the user rejects something outright — if they might still want it later, deselect the option or toggle the event instead. Deleting a variant or a destination also deletes everything inside it, so confirm with the user first.",
 		operations: ["VariantsV1Controller_delete", "DestinationsV1Controller_delete", "OptionsWritesV1Controller_delete", "EventsWritesV1Controller_delete"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: true,
+			idempotentHint: true,
+			openWorldHint: false,
+		},
 		inputShape: {
 			target: z.enum(["variant", "destination", "option", "event"]).describe("What to delete."),
 			tripId: z.string().describe("Id of the trip, as returned by list_trips or get_trip."),
@@ -609,8 +821,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "list_goals",
+		title: "List Goals",
 		description: "List the user's travel goals — the places and experiences on their bucket list (\"See the Northern Lights\"). Use this for inspiration when starting a new trip, or when the user asks what is on their list. Statuses: 'dreaming' is not planned yet, 'planning' is already linked to a trip, 'visited' is done.",
 		operations: ["GoalsV1Controller_list"],
+		annotations: {
+			readOnlyHint: true,
+			destructiveHint: false,
+			idempotentHint: true,
+			openWorldHint: false,
+		},
 		inputShape: {
 			status: z.enum(["dreaming", "planning", "visited"]).describe("Only return goals in this status.").optional(),
 			collection: z.string().describe("Only return goals in this collection id.").optional(),
@@ -624,8 +843,15 @@ export const TOOLS: ToolDefinition[] = [
 	},
 	{
 		name: "add_goal",
+		title: "Add Goal",
 		description: "Add a travel goal to the user's bucket list from a plain name or a URL — the server works out which and enriches it. Use when the user mentions something they would love to do some day but is not planning right now.",
 		operations: ["GoalsV1Controller_quickAdd"],
+		annotations: {
+			readOnlyHint: false,
+			destructiveHint: false,
+			idempotentHint: false,
+			openWorldHint: false,
+		},
 		inputShape: {
 			data: z.object({
 				input: z.string().describe("A name or URL — the server detects which and stores accordingly."),

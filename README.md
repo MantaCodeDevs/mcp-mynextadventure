@@ -67,6 +67,25 @@ order of operations, so a client does not have to guess the workflow.
 Not exposed yet, though the API supports them: collaborator access management and invites,
 voting, collections, invite tokens, goal↔trip linking, API key management, and trip deletion.
 
+### Tool annotations
+
+Every tool publishes a human-readable `title` (also as `annotations.title`; set in
+`scripts/tool-manifest.ts`, required by the Claude connectors directory) and all four MCP
+[`ToolAnnotations`](https://modelcontextprotocol.io/specification/latest/server/tools)
+hints on `tools/list`, so clients can tell at a glance what is safe to run unattended:
+
+| Hint | True for |
+| --- | --- |
+| `readOnlyHint` | The 4 lookups: `whoami`, `list_trips`, `get_trip`, `list_goals`. The other 20 write. |
+| `destructiveHint` | `delete_trip_item` only. Everything else adds records or edits fields in place. |
+| `idempotentHint` | The `update_*` / `select_*` tools, `reorder_destinations`, `create_trip_share_link` (the API returns the existing token) and `delete_trip_item`. False for every `add_*`/`create_*` — a second call adds a second record — and for `toggle_event`, which flips a flag. |
+| `openWorldHint` | The 8 tools whose request can reach a third-party API: the three read tools (Kinde profiles, Google Places, currency conversion) plus `add_accommodation_option`, `add_transport_option`, `add_event`, `update_destination_option` and `update_event`, which resolve a `googlePlaceId` through Google Places when one is supplied. The rest only touch MyNextAdventure storage. |
+
+The spec's defaults are the pessimistic ones (`destructiveHint` and `openWorldHint` both
+default to `true`), so the manifest requires all four to be stated per tool rather than
+inherited. `test/annotations.test.ts` holds the expected classification tool by tool and
+cross-checks `readOnlyHint` against the HTTP verb each tool actually issues.
+
 ## Connecting
 
 ### Claude Desktop
@@ -113,6 +132,16 @@ Settings → Connectors → Add custom connector, MCP server URL
 Streamable HTTP at `/mcp`. `GET /` returns a small JSON health document with the endpoint
 and tool count.
 
+### Local stdio
+
+The same tools over stdio, for clients that launch a subprocess, with the key in
+`MNA_API_KEY`. Glama's build check runs this behind `mcp-proxy`.
+
+```bash
+npm ci
+MNA_API_KEY=<api-key> npm run start:stdio
+```
+
 ## Development
 
 ```bash
@@ -138,11 +167,11 @@ npx wrangler dev --var MNA_API_BASE_URL:http://localhost:8899
 Tool schemas are **generated**, not hand-written:
 
 ```
-apps/server/openapi-v1.json   (the API's OpenAPI snapshot, kept fresh by server CI)
+spec/openapi-v1.json          (the API's OpenAPI snapshot)
         +
-scripts/tool-manifest.ts      (which operations become tools, their names and descriptions)
+scripts/tool-manifest.ts      (which operations become tools; names, descriptions, annotations)
         ↓  scripts/generator.ts
-src/generated/tools.ts        (committed; zod input schemas + request builders)
+src/generated/tools.ts        (committed; zod input schemas, annotations + request builders)
 ```
 
 To add or change a tool, edit `scripts/tool-manifest.ts` and run `npm run generate:tools`.
@@ -153,6 +182,11 @@ discriminator argument (`delete_trip_item`'s `target`, `select_destination_optio
 `action`) to keep the tool count down. Path params can be renamed (`id` → `tripId`), query
 params can be narrowed to enums, and descriptions can be overridden — everything else,
 including the request-body schemas, comes from the spec.
+
+Each entry must also carry `annotations` (all four MCP hints; see
+[Tool annotations](#tool-annotations)). TypeScript enforces this, so a new tool cannot be
+added without classifying it, and `test/annotations.test.ts` checks the result against an
+expected table.
 
 ### Deployment
 

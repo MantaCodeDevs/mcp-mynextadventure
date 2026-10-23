@@ -1,9 +1,10 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { loadSpec, OUTPUT_PATH, renderToolsFile } from "../scripts/generate-tools";
 import { buildUrl } from "../src/api-client";
-import { TOOLS } from "../src/generated/tools";
+import { CONTRACT_HASH, TOOLS } from "../src/generated/tools";
 import type { ApiRequest } from "../src/tool-types";
 
 /**
@@ -236,10 +237,12 @@ const CASES: Array<{
 			variantId: "variant-1",
 			destinationKey: "destination-1",
 			optionId: "option-1",
+			kind: "accommodation",
 		},
 		expected: {
 			method: "PUT",
 			path: "/v1/trips/trip-1/variants/variant-1/destinations/destination-1/options/option-1/select",
+			body: { type: "accommodation" },
 		},
 	},
 	{
@@ -343,10 +346,50 @@ describe("tool definitions", () => {
 		}
 	});
 
+	it("fingerprints the API contract it was generated from", () => {
+		// connector_info compares this against the live API's own hash to tell a
+		// stale client apart from a real API limitation. A hash that drifted from
+		// the spec it claims to describe would report mismatches that are not real.
+		expect(CONTRACT_HASH).toMatch(/^[0-9a-f]{12}$/);
+
+		const spec = loadSpec();
+		const recomputed = createHash("sha256")
+			.update(JSON.stringify(spec.components?.schemas ?? {}))
+			.digest("hex")
+			.slice(0, 12);
+
+		expect(CONTRACT_HASH).toBe(recomputed);
+	});
+
 	it("is regenerated from the current OpenAPI snapshot", () => {
 		// Guards against hand-edits and against the spec drifting ahead of the
 		// committed tools. Fix by running `npm run generate:tools`.
 		expect(readFileSync(OUTPUT_PATH, "utf8")).toBe(renderToolsFile());
+	});
+
+	it("lets a caller say who is travelling when making or editing a variant", () => {
+		// Without this the group size is unreachable over MCP and every variant an
+		// agent creates claims a single adult, silently skewing the trip budget.
+		// update_variant's `data` is itself optional, so unwrap before reading .shape.
+		const unwrap = (schema: z.ZodTypeAny) =>
+			(schema instanceof z.ZodOptional ? schema.unwrap() : schema) as z.ZodObject<z.ZodRawShape>;
+
+		for (const name of ["create_variant", "update_variant"]) {
+			const tool = TOOLS.find((t) => t.name === name);
+			const participants = unwrap(tool!.inputShape.data as z.ZodTypeAny).shape.participants as
+				| z.ZodTypeAny
+				| undefined;
+
+			expect(participants, `${name} exposes participants`).toBeDefined();
+			expect(
+				participants!.safeParse({ adults: 2, children: [{ age: 10 }, { age: 7 }] }).success,
+				`${name} accepts a family`,
+			).toBe(true);
+			expect(
+				participants!.safeParse({ children: [{ age: 10 }] }).success,
+				`${name} requires an adult count`,
+			).toBe(false);
+		}
 	});
 });
 
@@ -445,8 +488,40 @@ describe("grouped tools", () => {
 				variantId: "v1",
 				destinationKey: "d1",
 				optionId: "o1",
+				kind: "transport",
 			}).method,
 		).toBe("PUT");
+	});
+
+	// The server dispatches on the body's `type`; sending the path alone always 400s.
+	it.each(["accommodation", "transport", "getting-around"])(
+		"sends the %s kind in the select body",
+		(kind) => {
+			const tool = byName.get("select_destination_option");
+			if (!tool) throw new Error("missing tool");
+			expect(
+				tool.resolve({
+					tripId: "t1",
+					variantId: "v1",
+					destinationKey: "d1",
+					optionId: "o1",
+					kind,
+				}).body,
+			).toEqual({ type: kind });
+		},
+	);
+
+	it("requires the kind for both actions", () => {
+		const tool = byName.get("select_destination_option");
+		if (!tool) throw new Error("missing tool");
+		expect(() =>
+			z.object(tool.inputShape).parse({
+				tripId: "t1",
+				variantId: "v1",
+				destinationKey: "d1",
+				optionId: "o1",
+			}),
+		).toThrow();
 	});
 });
 
