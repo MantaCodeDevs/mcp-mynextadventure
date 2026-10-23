@@ -6,12 +6,14 @@
  * generated file is in sync with the spec.
  */
 
+import { createHash } from "node:crypto";
 import {
 	isGrouped,
 	PATH_PARAM_DESCRIPTIONS,
 	type GroupedTool,
 	type ParamOverride,
 	type SingleOpTool,
+	type ToolAnnotations,
 	type ToolSpec,
 } from "./tool-manifest";
 
@@ -194,8 +196,16 @@ interface ShapeEntry {
 	code: string;
 }
 
+/** Where a tool argument comes from: a spec parameter, or a request-body property. */
+interface ArgSource {
+	name: string;
+	required?: boolean;
+	description?: string;
+	schema?: JsonSchema;
+}
+
 function paramEntry(
-	parameter: Parameter,
+	parameter: ArgSource,
 	spec: OpenApiSpec,
 	name: string,
 	override: ParamOverride | undefined,
@@ -273,6 +283,24 @@ function mergeUnion(schema: JsonSchema, spec: OpenApiSpec): JsonSchema {
 	return { type: "object", properties, required };
 }
 
+/**
+ * MCP `ToolAnnotations`, emitted in the spec's own field order so the generated
+ * file is stable regardless of how the manifest object was built up.
+ */
+function emitAnnotations(annotations: ToolAnnotations): string[] {
+	const fields: Array<keyof ToolAnnotations> = [
+		"readOnlyHint",
+		"destructiveHint",
+		"idempotentHint",
+		"openWorldHint",
+	];
+	return [
+		"\t\tannotations: {",
+		...fields.map((field) => `\t\t\t${field}: ${annotations[field]},`),
+		"\t\t},",
+	];
+}
+
 function emitSingleTool(
 	tool: SingleOpTool,
 	resolved: ResolvedOperation,
@@ -333,8 +361,10 @@ function emitSingleTool(
 	return [
 		"\t{",
 		`\t\tname: ${quote(tool.name)},`,
+		`\t\ttitle: ${quote(tool.title)},`,
 		`\t\tdescription: ${quote(tool.description)},`,
 		`\t\toperations: [${quote(tool.operationId)}],`,
+		...emitAnnotations(tool.annotations),
 		...(shape.length === 0
 			? ["\t\tinputShape: {},"]
 			: [
@@ -366,29 +396,75 @@ function emitGroupedTool(
 	const discriminator = tool.discriminator;
 	const caseNames = Object.keys(discriminator.cases);
 
-	// Collect path params per case; grouped operations must be body-less.
-	const paramCases = new Map<string, { parameter: Parameter; cases: string[] }>();
+	// Path params and request-body properties both become flat tool arguments,
+	// keyed by argument name so that a `kind` in one case's path and the same
+	// `kind` in another case's body collapse into a single argument.
+	const argCases = new Map<
+		string,
+		{ source: ArgSource; required: boolean; cases: string[] }
+	>();
+	const caseBodyFields = new Map<string, Array<{ property: string; argName: string }>>();
+
+	const register = (argName: string, source: ArgSource, caseName: string) => {
+		const entry = argCases.get(argName);
+		if (!entry) {
+			argCases.set(argName, {
+				source,
+				required: source.required !== false,
+				cases: [caseName],
+			});
+			return;
+		}
+		entry.cases.push(caseName);
+		entry.required = entry.required && source.required !== false;
+	};
+
 	for (const [caseName, operationId] of Object.entries(discriminator.cases)) {
 		const resolved = index.get(operationId);
 		if (!resolved) throw new Error(`Unknown operationId: ${operationId}`);
-		if (requestBodySchema(resolved.operation)) {
-			throw new Error(
-				`Grouped tool "${tool.name}" case "${caseName}" (${operationId}) has a request body; grouping only supports body-less operations.`,
-			);
-		}
 		for (const parameter of resolved.operation.parameters ?? []) {
 			if (parameter.in !== "path") {
 				throw new Error(
 					`Grouped tool "${tool.name}" case "${caseName}" has a ${parameter.in} parameter, which grouping does not support.`,
 				);
 			}
-			const name = rename(parameter.name);
-			const entry = paramCases.get(name);
-			if (entry) entry.cases.push(caseName);
-			else paramCases.set(name, { parameter, cases: [caseName] });
+			register(rename(parameter.name), parameter, caseName);
 		}
+
+		const rawBody = requestBodySchema(resolved.operation);
+		if (!rawBody) continue;
+		const body = deref(rawBody, spec);
+		if (!body.properties) {
+			throw new Error(
+				`Grouped tool "${tool.name}" case "${caseName}" (${operationId}) has a request body with no named properties; grouping cannot flatten it into arguments.`,
+			);
+		}
+		const bodyRequired = new Set(body.required ?? []);
+		caseBodyFields.set(
+			caseName,
+			Object.entries(body.properties).map(([property, propertySchema]) => {
+				const argName = rename(property);
+				register(
+					argName,
+					{
+						name: property,
+						required: bodyRequired.has(property),
+						description: deref(propertySchema, spec).description,
+						schema: propertySchema,
+					},
+					caseName,
+				);
+				return { property, argName };
+			}),
+		);
 	}
-	// `kind` only appears in the path of some cases but is meaningful to name.
+
+	/** True when every case needs this argument, so it can be plainly required. */
+	const alwaysPresent = (argName: string): boolean => {
+		const entry = argCases.get(argName);
+		return entry?.required === true && entry.cases.length === caseNames.length;
+	};
+
 	const shape: ShapeEntry[] = [
 		{
 			name: discriminator.name,
@@ -401,19 +477,20 @@ function emitGroupedTool(
 			),
 		},
 	];
-	for (const [name, entry] of paramCases) {
-		const alwaysRequired = entry.cases.length === caseNames.length;
+	for (const [name, entry] of argCases) {
+		const required = alwaysPresent(name);
 		const override = tool.paramOverrides?.[name];
-		const suffix = alwaysRequired
-			? undefined
-			: `Required when ${discriminator.name} is ${humanList(entry.cases)}.`;
+		const suffix =
+			required || !entry.required
+				? undefined
+				: `Required when ${discriminator.name} is ${humanList(entry.cases)}.`;
 		shape.push(
 			paramEntry(
-				entry.parameter,
+				entry.source,
 				spec,
 				name,
 				override,
-				alwaysRequired,
+				required,
 				override?.description ? undefined : suffix,
 			),
 		);
@@ -431,23 +508,35 @@ function emitGroupedTool(
 		});
 	}
 
+	/** How a branch reads an argument: plainly, or guarded when it is case-specific. */
+	const argExpression = (argName: string, caseName: string): string => {
+		const entry = argCases.get(argName);
+		if (!entry?.required || alwaysPresent(argName)) return `args[${quote(argName)}]`;
+		return `req(args, ${quote(argName)}, ${quote(discriminator.name)}, ${quote(caseName)})`;
+	};
+
 	const branches = Object.entries(discriminator.cases).map(([caseName, operationId]) => {
 		const resolved = index.get(operationId) as ResolvedOperation;
-		const template = pathTemplate(resolved.path, (param) => {
-			const argName = rename(param);
-			const entry = paramCases.get(argName);
-			const alwaysRequired = entry?.cases.length === caseNames.length;
-			return alwaysRequired
-				? `args[${quote(argName)}]`
-				: `req(args, ${quote(argName)}, ${quote(discriminator.name)}, ${quote(caseName)})`;
-		});
+		const template = pathTemplate(resolved.path, (param) =>
+			argExpression(rename(param), caseName),
+		);
+		const requestLines = [
+			`\t\t\t\t\t\tmethod: ${quote(resolved.method)},`,
+			`\t\t\t\t\t\tpath: \`${template}\`,`,
+		];
+		const bodyFields = caseBodyFields.get(caseName) ?? [];
+		if (bodyFields.length > 0) {
+			const entries = bodyFields
+				.map(({ property, argName }) => `${property}: ${argExpression(argName, caseName)}`)
+				.join(", ");
+			requestLines.push(`\t\t\t\t\t\tbody: { ${entries} },`);
+		}
 		const guard = tool.caseGuards?.[caseName];
 		if (!guard) {
 			return [
 				`\t\t\t\tcase ${quote(caseName)}:`,
 				"\t\t\t\t\treturn {",
-				`\t\t\t\t\t\tmethod: ${quote(resolved.method)},`,
-				`\t\t\t\t\t\tpath: \`${template}\`,`,
+				...requestLines,
 				"\t\t\t\t\t};",
 			].join("\n");
 		}
@@ -455,8 +544,7 @@ function emitGroupedTool(
 			`\t\t\t\tcase ${quote(caseName)}: {`,
 			`\t\t\t\t\tconfirmed(args, ${quote(guard.name)}, ${quote(discriminator.name)}, ${quote(caseName)});`,
 			"\t\t\t\t\treturn {",
-			`\t\t\t\t\t\tmethod: ${quote(resolved.method)},`,
-			`\t\t\t\t\t\tpath: \`${template}\`,`,
+			...requestLines,
 			"\t\t\t\t\t};",
 			"\t\t\t\t}",
 		].join("\n");
@@ -471,10 +559,12 @@ function emitGroupedTool(
 	return [
 		"\t{",
 		`\t\tname: ${quote(tool.name)},`,
+		`\t\ttitle: ${quote(tool.title)},`,
 		`\t\tdescription: ${quote(tool.description)},`,
 		`\t\toperations: [${Object.values(discriminator.cases)
 			.map(quote)
 			.join(", ")}],`,
+		...emitAnnotations(tool.annotations),
 		"\t\tinputShape: {",
 		...shape.map((entry) => `\t\t\t${entry.name}: ${entry.code},`),
 		"\t\t},",
@@ -539,6 +629,19 @@ function confirmed(
 }
 `;
 
+/**
+ * Fingerprint of the OpenAPI snapshot these tools were generated from. A client
+ * caches tool schemas at connect time, so "my schema lacks a field the API has"
+ * and "the API really lacks it" look identical from the outside. Comparing this
+ * against the server's own contract hash tells the two apart in one call.
+ */
+function contractHash(spec: OpenApiSpec): string {
+	return createHash("sha256")
+		.update(JSON.stringify(spec.components?.schemas ?? {}))
+		.digest("hex")
+		.slice(0, 12);
+}
+
 export function generateToolsFile(spec: OpenApiSpec, manifest: ToolSpec[]): string {
 	const index = indexOperations(spec);
 	const bodies = manifest.map((tool) => {
@@ -553,6 +656,9 @@ export function generateToolsFile(spec: OpenApiSpec, manifest: ToolSpec[]): stri
 	});
 
 	return `${HEADER}
+/** Fingerprint of the API contract these tools were generated from. */
+export const CONTRACT_HASH = "${contractHash(spec)}";
+
 export const TOOLS: ToolDefinition[] = [
 ${bodies.join("\n")}
 ];

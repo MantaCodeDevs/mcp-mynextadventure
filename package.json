@@ -9,6 +9,7 @@
 		"generate:tools": "tsx scripts/generate-tools.ts",
 		"lint:fix": "biome lint --fix",
 		"start": "wrangler dev",
+		"start:stdio": "tsx src/stdio.ts",
 		"cf-typegen": "wrangler types",
 		"test": "vitest run",
 		"test:watch": "vitest",
